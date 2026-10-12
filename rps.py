@@ -4,12 +4,14 @@ rps.py
 Redistributed and modified with permission from the
 EECS Department at The University of Michigan, Ann Arbor
 
-Name: TO FILL IN (your name)
+Name: Karson Knights
 
 CS 104: Project 2
 FALL 2026
 
-Description: TO FILL IN (one or two sentences about what this program does)
+Description: A two-player rock, paper, scissors game for the terminal.
+It plays three rounds per game, announces each round winner and the
+game winner, and lets players keep playing until they quit.
 """
 
 # ***********************************************************************
@@ -211,8 +213,17 @@ def rps():
     """
     Purpose: Runs the whole program. Write this function LAST.
     """
-    # TODO: implement
-    pass
+    print_initial_header()
+    p1_name = get_name(PLAYER_1)
+    p2_name = get_name(PLAYER_2)
+
+    choice = get_menu_choice()
+    while choice != QUIT_CHOICE:
+        winner_name = do_game(p1_name, p2_name, choice)
+        announce_winner(winner_name)
+        choice = get_menu_choice()
+
+    print_closer()
 
 
 # ***********************************************************************
@@ -220,12 +231,108 @@ def rps():
 # We have started is_move_good() for you.
 # ***********************************************************************
 
-def is_move_good(move):
-    """TO FILL IN: describe what this function does in one line."""
-    # TODO: implement
+def get_name(player_number):
+    """Asks for a name. Uses a default name if it is empty."""
+    name = input(f"Player {player_number}, enter your name: ")
+    if name == "":
+        print_error_message(ERROR_NAME)
+        if player_number == PLAYER_1:
+            return DEFAULT_NAME_1
+        return DEFAULT_NAME_2
+    return name
 
-    # NOTE: replace this return statement!!!
-    return True
+
+def get_menu_choice():
+    """Shows the menu until a valid choice is entered. Returns an int."""
+    valid_choices = (str(PLAY_RPS), str(PLAY_RPSLS), str(QUIT_CHOICE))
+    while True:
+        print_menu()
+        choice = input("Choice --> ")
+        # Check the text first. Only cast to int once it is valid.
+        if choice in valid_choices:
+            return int(choice)
+        print("Invalid menu choice")
+
+
+def is_move_good(move):
+    """Returns True only if move is r, p or s in any case."""
+    # A tuple makes sure "" and "rock" are not accepted.
+    return move.lower() in (ROCK, PAPER, SCISSORS)
+
+
+def get_move(player_name):
+    """Asks for a move. Uses the default move if it is invalid."""
+    move = input(f"{player_name}, enter your move: ")
+    if not is_move_good(move):
+        print_error_message(ERROR_MOVE)
+        return DEFAULT_MOVE
+    return move
+
+
+def is_round_winner(move, opponent_move):
+    """Returns True if move beats opponent_move. A tie is False."""
+    # Lowercase both so R and r are treated the same.
+    move = move.lower()
+    opponent_move = opponent_move.lower()
+    return ((move == ROCK and opponent_move == SCISSORS)
+            or (move == SCISSORS and opponent_move == PAPER)
+            or (move == PAPER and opponent_move == ROCK))
+
+
+def announce_round_winner(winner_name):
+    """Prints the round winner, or a draw if the name is empty."""
+    if winner_name == "":
+        print("This round is a draw!")
+    else:
+        print(f"{winner_name} wins the round!")
+
+
+def do_round(p1_name, p2_name):
+    """Plays one round. Returns DRAW, PLAYER_1 or PLAYER_2."""
+    p1_move = get_move(p1_name)
+    p2_move = get_move(p2_name)
+    if is_round_winner(p1_move, p2_move):
+        return PLAYER_1
+    if is_round_winner(p2_move, p1_move):
+        return PLAYER_2
+    return DRAW
+
+
+def announce_winner(winner_name):
+    """Prints the game winner, or no winner if the name is empty."""
+    if winner_name == "":
+        print("No winner!")
+    else:
+        print(f"Congratulations {winner_name}!")
+        print(f"You won {COURSE_NAME} Rock, Paper, Scissors!")
+
+
+def do_game(p1_name, p2_name, game_type):
+    """Plays MAX_ROUNDS rounds. Returns the winner's name or ''."""
+    if game_type == PLAY_RPSLS:
+        print("Under Construction")
+        return ""
+
+    p1_wins = 0
+    p2_wins = 0
+    # Every round is played, even if someone is already ahead.
+    for _ in range(MAX_ROUNDS):
+        round_result = do_round(p1_name, p2_name)
+        if round_result == PLAYER_1:
+            p1_wins += 1
+            announce_round_winner(p1_name)
+        elif round_result == PLAYER_2:
+            p2_wins += 1
+            announce_round_winner(p2_name)
+        else:
+            announce_round_winner("")
+        print()
+
+    if p1_wins > p2_wins:
+        return p1_name
+    if p2_wins > p1_wins:
+        return p2_name
+    return ""
 
 
 # ***********************************************************************
